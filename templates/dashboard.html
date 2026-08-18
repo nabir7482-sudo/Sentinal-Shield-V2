@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · SentinelShield{% endblock %}
+{% block content %}
+<header class="page-header"><div><p class="eyebrow">SECURITY OVERVIEW</p><h1>Threat dashboard</h1><p class="muted">Live values calculated from recorded security events.</p></div><a class="btn btn-outline-light" href="{{ url_for('reports.download_csv') }}">Download report</a></header>
+<section class="metric-grid">
+  <article class="metric-card"><span>Total events</span><strong>{{ stats.total_events }}</strong><small>All recorded detections</small></article>
+  <article class="metric-card critical"><span>Critical events</span><strong>{{ stats.critical_events }}</strong><small>Multiple correlated indicators</small></article>
+  <article class="metric-card high"><span>High severity</span><strong>{{ stats.high_events }}</strong><small>Confirmed attack patterns</small></article>
+  <article class="metric-card blocked"><span>Blocked requests</span><strong>{{ stats.blocked_requests }}</strong><small>Automatic protection actions</small></article>
+  <article class="metric-card"><span>Unique IPs</span><strong>{{ stats.unique_ips }}</strong><small>Observed event sources</small></article>
+</section>
+<section class="chart-grid mt-4">
+  <article class="panel chart-panel wide"><div class="panel-title"><h2>Events over time</h2><span>Last 7 days</span></div><canvas id="timelineChart"></canvas></article>
+  <article class="panel chart-panel"><div class="panel-title"><h2>By severity</h2></div><canvas id="severityChart"></canvas></article>
+  <article class="panel chart-panel"><div class="panel-title"><h2>By category</h2></div><canvas id="categoryChart"></canvas></article>
+  <article class="panel top-ips"><div class="panel-title"><h2>Top source IPs</h2><span>Stored events</span></div>
+    {% if stats.top_ips %}<table class="table table-dark table-borderless"><tbody>{% for ip, count in stats.top_ips.items() %}<tr><td><code>{{ ip }}</code></td><td class="text-end">{{ count }} events</td></tr>{% endfor %}</tbody></table>{% else %}<p class="empty">No security events have been recorded yet.</p>{% endif %}
+  </article>
+</section>
+<section class="panel mt-4"><div class="panel-title"><div><h2>Recent security events</h2><span>Latest persisted detections</span></div><a href="{{ url_for('events.list_events') }}">View all →</a></div>
+  <div class="table-responsive"><table class="table table-dark align-middle"><thead><tr><th>Time</th><th>Source IP</th><th>Category</th><th>Severity</th><th>Confidence</th><th>Action</th></tr></thead><tbody>
+  {% for event in stats.recent %}<tr><td>{{ event.timestamp[:19].replace('T', ' ') }}</td><td><code>{{ event.source_ip }}</code></td><td><a href="{{ url_for('events.detail', event_id=event.id) }}">{{ event.category }}</a></td><td><span class="badge sev-{{ event.severity }}">{{ event.severity }}</span></td><td>{{ '%.0f'|format(event.confidence * 100) }}%</td><td><span class="action {{ event.action_taken|lower }}">{{ event.action_taken }}</span></td></tr>{% else %}<tr><td colspan="6" class="empty text-center">No detections yet. Use the Local Lab or analyse the included sample log.</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+{% endblock %}
+{% block scripts %}<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script>window.dashboardData = {{ stats|tojson }};</script><script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>{% endblock %}

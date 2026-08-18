@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Sign in · SentinelShield{% endblock %}
+{% block content %}
+<section class="login-wrap">
+  <div class="login-panel">
+    <div class="shield-icon">S</div>
+    <p class="eyebrow">LOCAL SECURITY CONSOLE</p>
+    <h1>Sentinel<span>Shield</span></h1>
+    <p class="muted">Advanced intrusion detection &amp; web protection.</p>
+    {% if setup_required %}
+      <div class="setup-note"><strong>Initial setup required.</strong><br>Run <code>flask --app app init-admin</code> in this project directory, then refresh this page.</div>
+    {% endif %}
+    <form method="post" class="mt-4" autocomplete="off">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label for="username">Administrator username</label>
+      <input id="username" name="username" class="form-control" maxlength="64" required autofocus>
+      <label for="password" class="mt-3">Password</label>
+      <input id="password" name="password" class="form-control" type="password" required>
+      <button class="btn btn-primary w-100 mt-4">Sign in securely</button>
+    </form>
+    <p class="login-foot">Passwords are stored only as secure hashes.</p>
+  </div>
+</section>
+{% endblock %}
