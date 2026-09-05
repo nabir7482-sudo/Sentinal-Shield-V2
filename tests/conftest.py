@@ -18,6 +18,7 @@ def app():
         "SQLALCHEMY_DATABASE_URI": "sqlite://",
         "SECRET_KEY": "test-session-secret-not-for-production",
         "LAB_MODE": True,
+        "TRUSTED_PROXY_COUNT": 1,
     })
     with application.app_context():
         db.drop_all()

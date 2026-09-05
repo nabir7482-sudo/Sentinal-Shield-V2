@@ -20,6 +20,18 @@ def test_malicious_request_is_logged_and_blocked(app, client):
         assert BlockedIP.query.filter_by(ip_address="127.0.0.1", active=True).count() == 1
 
 
+def test_forwarded_client_ip_is_persisted_when_proxy_is_trusted(app, client):
+    response = client.get(
+        "/?q=training%20UNION%20SELECT%20marker",
+        headers={"X-Forwarded-For": "203.0.113.42"},
+    )
+    assert response.status_code == 403
+    with app.app_context():
+        event = SecurityEvent.query.one()
+        assert event.source_ip == "203.0.113.42"
+        assert BlockedIP.query.filter_by(ip_address="203.0.113.42", active=True).count() == 1
+
+
 def test_brute_force_is_recorded_and_temporary_block_created(app, client):
     rate_detector.clear_login_failures("127.0.0.1")
     token = csrf(client)

@@ -23,7 +23,7 @@ SENSITIVE_FIELDS = {"password", "password_confirmation", "csrf_token", "token", 
 
 
 def client_ip() -> str:
-    """Use the direct peer IP; proxy trust must be explicitly configured in production."""
+    """Return Flask's proxy-aware client IP, or the direct peer when no proxy is trusted."""
     return (request.remote_addr or "unknown")[:45]
 
 

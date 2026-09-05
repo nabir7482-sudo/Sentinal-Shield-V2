@@ -81,6 +81,8 @@ python app.py
 
 Open [http://127.0.0.1:5000](http://127.0.0.1:5000). SQLite schema and default security settings are created automatically on the first run.
 
+When deploying behind a reverse proxy, set `TRUSTED_PROXY_COUNT` to the number of proxy hops (usually `1`) before starting the app. SentinelShield then records the original client IP from the proxy's `X-Forwarded-For` header. Leave it at `0` for direct access; never enable it unless every configured proxy is controlled by you.
+
 ### Alternative first-run admin setup
 
 Copy `.env.example` to `.env`, use a long random `SECRET_KEY`, then set both `ADMIN_USERNAME` and `ADMIN_PASSWORD` before starting once. The CLI command is preferable because it does not leave a password in an environment file. Never commit `.env`.

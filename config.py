@@ -25,6 +25,8 @@ class Config:
     SESSION_COOKIE_SAMESITE = "Lax"
     SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE", "false").lower() == "true"
     PERMANENT_SESSION_LIFETIME = 60 * 60 * 8
+    # Set to the number of trusted reverse proxies in front of Flask.
+    TRUSTED_PROXY_COUNT = int(os.getenv("TRUSTED_PROXY_COUNT", "0"))
     LAB_MODE = os.getenv("LAB_MODE", "true").lower() == "true"
     LOG_PATH = BASE_DIR / "logs" / "sentinelshield.log"
     SAMPLE_LOG_PATH = BASE_DIR / "sample_data" / "sample_access.log"

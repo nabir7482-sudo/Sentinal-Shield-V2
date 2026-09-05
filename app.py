@@ -10,6 +10,7 @@ from typing import Any
 import click
 from flask import Flask, render_template
 from werkzeug.exceptions import RequestEntityTooLarge
+from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.security import generate_password_hash
 
 from config import Config
@@ -49,6 +50,14 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     app.config.from_object(Config)
     if test_config:
         app.config.update(test_config)
+    app.wsgi_app = ProxyFix(
+        app.wsgi_app,
+        x_for=app.config["TRUSTED_PROXY_COUNT"],
+        x_proto=app.config["TRUSTED_PROXY_COUNT"],
+        x_host=app.config["TRUSTED_PROXY_COUNT"],
+        x_port=app.config["TRUSTED_PROXY_COUNT"],
+        x_prefix=app.config["TRUSTED_PROXY_COUNT"],
+    )
     _configure_logging(app)
     db.init_app(app)
 
