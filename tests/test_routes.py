@@ -39,3 +39,26 @@ def test_login_and_logout(client):
     assert response.status_code == 302
     assert client.get("/logout").status_code == 302
     assert client.get("/api/events").status_code == 401
+
+
+def test_ai_investigation_chat_verdict_and_reports(app, logged_client):
+    token = csrf(logged_client)
+    response = logged_client.post("/lab/test-request", data={
+        "csrf_token": token, "test_value": "' OR 1=1 --"
+    })
+    assert response.status_code == 200
+    with app.app_context():
+        event = SecurityEvent.query.one()
+        event_id = event.id
+    investigation = logged_client.get(f"/investigate/{event_id}")
+    assert investigation.status_code == 200
+    assert b"1. Monitoring &amp; log analysis" in investigation.data
+    assert b"4. Containment &amp; mitigation" in investigation.data
+    assert b"6. Incident reporting" in investigation.data
+    chat = logged_client.post("/ai-chat", data={"csrf_token": token, "question": "show all SQLi from last hour"})
+    assert chat.status_code == 200
+    assert chat.get_json()["count"] == 1
+    assert logged_client.get("/api/logs").get_json()["format"] == "SIEM"
+    verdict = logged_client.post(f"/events/{event_id}/verdict", data={"csrf_token": token, "analyst_verdict": "True Positive"})
+    assert verdict.status_code == 302
+    assert logged_client.get("/generate_report").mimetype == "application/pdf"

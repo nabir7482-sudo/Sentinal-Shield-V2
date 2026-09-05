@@ -4,8 +4,10 @@ from __future__ import annotations
 
 from datetime import timedelta
 import logging
+from functools import lru_cache
 from typing import Any
 
+import requests
 from flask import Flask, abort, g, request, session
 
 from database.database import db, setting_bool, setting_int, settings
@@ -70,6 +72,7 @@ def record_event(
     user_agent: str,
     action: str,
     description: str | None = None,
+    payload_preview: str = "",
 ) -> SecurityEvent:
     """Persist a detection result without retaining request body or secrets."""
     event = SecurityEvent(
@@ -84,10 +87,25 @@ def record_event(
         description=(description or result.reason or "Suspicious activity detected.")[:4000],
         action_taken=action,
         status="OPEN",
+        payload_preview=payload_preview[:500],
+        country=lookup_country(ip_address),
+        mitre_attack={"SQL Injection": "T1190", "Cross-Site Scripting": "T1059"}.get(result.category or "", "T1190"),
     )
     db.session.add(event)
     logger.info("Security event created: %s from %s (%s)", event.category, event.source_ip, action)
     return event
+
+
+@lru_cache(maxsize=256)
+def lookup_country(ip_address: str) -> str:
+    if ip_address in {"127.0.0.1", "::1", "unknown"}:
+        return "Local"
+    try:
+        response = requests.get(f"http://ip-api.com/json/{ip_address}?fields=status,country", timeout=1.5)
+        data = response.json()
+        return str(data.get("country") or "Unknown") if data.get("status") == "success" else "Unknown"
+    except (requests.RequestException, ValueError, TypeError):
+        return "Unknown"
 
 
 def _safe_request_text() -> str:
@@ -159,7 +177,9 @@ def register_security(app: Flask) -> None:
             request_text, _repeated_count(ip_address, result), sensitivity=sensitivity
         )
         action = "LOGGED"
-        if result.severity in {"HIGH", "CRITICAL"} and setting_bool("auto_block_enabled"):
+        if 0.60 <= result.confidence < 0.85:
+            action = "FLAGGED"
+        if result.confidence >= 0.85 and setting_bool("auto_block_enabled"):
             action = "BLOCKED"
             block_ip(ip_address, result.reason or "Detected suspicious request", setting_int("block_duration_minutes"))
         event = record_event(
@@ -169,6 +189,7 @@ def register_security(app: Flask) -> None:
             path=request.path,
             user_agent=request.user_agent.string or "",
             action=action,
+            payload_preview=request_text,
         )
         db.session.commit()
         g.security_event_id = event.id

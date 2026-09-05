@@ -39,6 +39,7 @@ def test_request() -> Any:
                 user_agent="local lab test",
                 action="LOGGED",
                 description=(result.reason or "Suspicious lab string.") + " Local laboratory test; no payload was executed.",
+                payload_preview=submitted,
             )
             db.session.commit()
     return render_template("lab.html", result=result, submitted=submitted)

@@ -38,6 +38,10 @@ class SecurityEvent(db.Model):
     description: Mapped[str] = mapped_column(Text, nullable=False)
     action_taken: Mapped[str] = mapped_column(String(32), nullable=False)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="OPEN")
+    payload_preview: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    country: Mapped[str] = mapped_column(String(64), nullable=False, default="Unknown")
+    analyst_verdict: Mapped[str] = mapped_column(String(20), nullable=False, default="Pending")
+    mitre_attack: Mapped[str] = mapped_column(String(16), nullable=False, default="T1190")
 
     def as_dict(self) -> dict[str, object]:
         return {
@@ -54,6 +58,10 @@ class SecurityEvent(db.Model):
             "description": self.description,
             "action_taken": self.action_taken,
             "status": self.status,
+            "payload_preview": self.payload_preview,
+            "country": self.country,
+            "analyst_verdict": self.analyst_verdict,
+            "mitre_attack": self.mitre_attack,
         }
 
 

@@ -13,7 +13,7 @@ from werkzeug.exceptions import RequestEntityTooLarge
 from werkzeug.security import generate_password_hash
 
 from config import Config
-from database.database import db, initialise_defaults
+from database.database import db, initialise_defaults, upgrade_event_schema
 from database.models import Admin
 from middleware.security_middleware import register_security
 from routes.auth import csrf_token, register_auth_routes
@@ -54,6 +54,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
 
     with app.app_context():
         db.create_all()
+        upgrade_event_schema()
         initialise_defaults()
         _bootstrap_admin_from_environment(app)
 
@@ -132,4 +133,5 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
 app = create_app()
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000, debug=False)
+    app.run(host="0.0.0.0", port=5000, debug=True)
+

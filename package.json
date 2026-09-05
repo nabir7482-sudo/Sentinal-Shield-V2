@@ -1,0 +1,24 @@
+{
+  "name": "sentinal-project",
+  "version": "1.0.0",
+  "description": "SentinelShield is a beginner-friendly, defensive Flask application for cybersecurity internships and classroom projects. It inspects local web requests and access-log paths, applies explainable rule-based detections, stores alerts in SQLite, and presents the results through a small SOC-style dashboard.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nabir7482-sudo/Sentinal-project.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/nabir7482-sudo/Sentinal-project/issues"
+  },
+  "homepage": "https://github.com/nabir7482-sudo/Sentinal-project#readme"
+}

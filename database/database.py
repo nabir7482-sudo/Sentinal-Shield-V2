@@ -3,10 +3,28 @@
 from __future__ import annotations
 
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import inspect, text
 
 from config import DEFAULT_SETTINGS
 
 db = SQLAlchemy()
+
+
+def upgrade_event_schema() -> None:
+    """Add SOC metadata columns to databases created by earlier versions."""
+    if db.engine.dialect.name != "sqlite":
+        return
+    columns = {column["name"] for column in inspect(db.engine).get_columns("security_event")}
+    additions = {
+        "payload_preview": "TEXT NOT NULL DEFAULT ''",
+        "country": "VARCHAR(64) NOT NULL DEFAULT 'Unknown'",
+        "analyst_verdict": "VARCHAR(20) NOT NULL DEFAULT 'Pending'",
+        "mitre_attack": "VARCHAR(16) NOT NULL DEFAULT 'T1190'",
+    }
+    for name, definition in additions.items():
+        if name not in columns:
+            db.session.execute(text(f'ALTER TABLE security_event ADD COLUMN {name} {definition}'))
+    db.session.commit()
 
 
 def initialise_defaults() -> None:

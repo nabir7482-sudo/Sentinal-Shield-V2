@@ -35,7 +35,7 @@ DEFAULT_SETTINGS: dict[str, str] = {
     "brute_force_window_seconds": "60",
     "max_requests_per_minute": "100",
     "auto_block_enabled": "true",
-    "block_duration_minutes": "15",
+    "block_duration_minutes": "30",
     "detection_sensitivity": "standard",
 }
 
